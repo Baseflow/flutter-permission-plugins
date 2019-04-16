@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:location_permissions/location_permissions.dart';
 
@@ -26,7 +24,7 @@ class MyApp extends StatelessWidget {
           child: ListView(
               children: LocationPermissionLevel.values
                   .map((LocationPermissionLevel level) =>
-                  PermissionWidget(level))
+                      PermissionWidget(level))
                   .toList()),
         ),
       ),
@@ -58,7 +56,7 @@ class _PermissionState extends State<PermissionWidget> {
 
   void _listenForPermissionStatus() {
     final Future<PermissionStatus> statusFuture =
-      LocationPermissions.checkPermissionStatus();
+        LocationPermissions.checkPermissionStatus();
 
     statusFuture.then((PermissionStatus status) {
       setState(() {
@@ -97,20 +95,22 @@ class _PermissionState extends State<PermissionWidget> {
     );
   }
 
-  void checkServiceStatus(BuildContext context, LocationPermissionLevel permissionLevel) {
-    LocationPermissions
-        .checkServiceStatus()
+  void checkServiceStatus(
+      BuildContext context, LocationPermissionLevel permissionLevel) {
+    LocationPermissions.checkServiceStatus()
         .then((ServiceStatus serviceStatus) {
       final SnackBar snackBar =
-      SnackBar(content: Text(serviceStatus.toString()));
+          SnackBar(content: Text(serviceStatus.toString()));
 
       Scaffold.of(context).showSnackBar(snackBar);
     });
   }
 
-  Future<void> requestPermission(LocationPermissionLevel permissionLevel) async {
+  Future<void> requestPermission(
+      LocationPermissionLevel permissionLevel) async {
     final PermissionStatus permissionRequestResult =
-    await LocationPermissions.requestPermissions(permissionLevel: permissionLevel);
+        await LocationPermissions.requestPermissions(
+            permissionLevel: permissionLevel);
 
     setState(() {
       print(permissionRequestResult);

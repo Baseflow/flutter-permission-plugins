@@ -6,7 +6,7 @@ import 'package:location_permissions/src/permission_enums.dart';
 
 class LocationPermissions {
   static const MethodChannel _channel =
-      const MethodChannel('com.baseflow.flutter/location_permissions');
+      MethodChannel('com.baseflow.flutter/location_permissions');
 
   /// Check current permission status.
   ///
