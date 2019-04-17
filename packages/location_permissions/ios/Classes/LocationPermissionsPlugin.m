@@ -200,8 +200,10 @@
             return PermissionStatusRestricted;
         case kCLAuthorizationStatusDenied:
             return PermissionStatusDenied;
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         case kCLAuthorizationStatusAuthorized:
             return PermissionStatusGranted;
+#pragma clang diagnostic warning "-Wdeprecated-declarations"
         default:
             return PermissionStatusUnknown;
     }
