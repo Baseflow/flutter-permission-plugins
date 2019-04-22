@@ -74,7 +74,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   private final Registrar mRegistrar;
   private Result mResult;
-  private EventSink eventSink;
+  private EventSink mEventSink;
 
   private LocationPermissionsPlugin(Registrar mRegistrar) {
     this.mRegistrar = mRegistrar;
@@ -108,14 +108,14 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   }
 
   private void emitLocationServiceStatus(boolean enabled) {
-    if (eventSink != null) {
-      eventSink.success(enabled);
+    if (mEventSink != null) {
+      mEventSink.success(enabled);
     }
   }
 
   private void emitLocationServiceError(String message) {
-    if (eventSink != null) {
-      eventSink.error("", message, null);
+    if (mEventSink != null) {
+      mEventSink.error("", message, null);
     }
   }
 
@@ -169,11 +169,12 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   @Override
   public void onListen(Object arguments, EventSink events) {
-    eventSink = events;
+    mEventSink = events;
   }
 
   @Override
   public void onCancel(Object arguments) {
+    mEventSink = null;
   }
 
   @PermissionStatus
