@@ -75,9 +75,14 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   private final Registrar mRegistrar;
   private Result mResult;
   private EventSink mEventSink;
+  private final IntentFilter mIntentFilter;
+  private final LocationServiceBroadcastReceiver mReceiver;
 
   private LocationPermissionsPlugin(Registrar mRegistrar) {
     this.mRegistrar = mRegistrar;
+    mReceiver = new LocationServiceBroadcastReceiver(this);
+    mIntentFilter = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+            ? new IntentFilter(LocationManager.MODE_CHANGED_ACTION) : null;
   }
 
   /** Plugin registration. */
@@ -99,12 +104,6 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
         }
       }
     });
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-      IntentFilter intentFilter = new IntentFilter(LocationManager.MODE_CHANGED_ACTION);
-      LocationServiceBroadcastReceiver receiver = new LocationServiceBroadcastReceiver(locationPermissionsPlugin);
-      registrar.activeContext().registerReceiver(receiver, intentFilter);
-    }
   }
 
   private void emitLocationServiceStatus(boolean enabled) {
@@ -169,12 +168,20 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   @Override
   public void onListen(Object arguments, EventSink events) {
-    mEventSink = events;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+      getActiveContext().registerReceiver(mReceiver, mIntentFilter);
+      mEventSink = events;
+    } else {
+      throw new UnsupportedOperationException("Location service availability stream requires at least Android K.");
+    }
   }
 
   @Override
   public void onCancel(Object arguments) {
-    mEventSink = null;
+    if (mEventSink != null) {
+      getActiveContext().unregisterReceiver(mReceiver);
+      mEventSink = null;
+    }
   }
 
   @PermissionStatus
