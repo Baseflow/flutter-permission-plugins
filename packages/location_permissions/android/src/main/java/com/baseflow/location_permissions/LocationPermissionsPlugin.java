@@ -169,7 +169,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   @Override
   public void onListen(Object arguments, EventSink events) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-      getActiveContext().registerReceiver(mReceiver, mIntentFilter);
+      mRegistrar.activity().getApplicationContext().registerReceiver(mReceiver, mIntentFilter);
       mEventSink = events;
     } else {
       throw new UnsupportedOperationException("Location service availability stream requires at least Android K.");
@@ -179,7 +179,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   @Override
   public void onCancel(Object arguments) {
     if (mEventSink != null) {
-      getActiveContext().unregisterReceiver(mReceiver);
+      mRegistrar.activity().getApplicationContext().unregisterReceiver(mReceiver);
       mEventSink = null;
     }
   }
