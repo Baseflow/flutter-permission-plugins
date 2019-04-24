@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'location_permissions'
-  s.version          = '1.0.2'
+  s.version          = '1.1.0'
   s.summary          = 'Location permission plugin for Flutter.'
   s.description      = <<-DESC
     This plugin provides a cross-platform (iOS, Android) API to check and request access to the location services on the
