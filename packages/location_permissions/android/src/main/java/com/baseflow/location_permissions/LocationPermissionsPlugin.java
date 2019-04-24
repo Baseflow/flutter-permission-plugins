@@ -168,6 +168,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   @Override
   public void onListen(Object arguments, EventSink events) {
+    events.success(isLocationServiceEnabled(getActiveContext()));
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
       mRegistrar.activity().getApplicationContext().registerReceiver(mReceiver, mIntentFilter);
       mEventSink = events;
