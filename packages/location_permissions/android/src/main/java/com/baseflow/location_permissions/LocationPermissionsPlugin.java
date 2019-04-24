@@ -2,8 +2,10 @@ package com.baseflow.location_permissions;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
@@ -11,15 +13,6 @@ import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-import androidx.annotation.IntDef;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -27,8 +20,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import androidx.annotation.IntDef;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import io.flutter.plugin.common.EventChannel;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
+import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry;
+import io.flutter.plugin.common.PluginRegistry.Registrar;
+
+import static io.flutter.plugin.common.EventChannel.EventSink;
+import static io.flutter.plugin.common.EventChannel.StreamHandler;
+
 /** LocationPermissionsPlugin */
-public class LocationPermissionsPlugin implements MethodCallHandler {
+public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandler {
   private static final String LOG_TAG = "location_permissions";
   private static final int PERMISSION_CODE = 25;
 
@@ -67,16 +74,24 @@ public class LocationPermissionsPlugin implements MethodCallHandler {
 
   private final Registrar mRegistrar;
   private Result mResult;
+  private EventSink mEventSink;
+  private final IntentFilter mIntentFilter;
+  private final LocationServiceBroadcastReceiver mReceiver;
 
   private LocationPermissionsPlugin(Registrar mRegistrar) {
     this.mRegistrar = mRegistrar;
+    mReceiver = new LocationServiceBroadcastReceiver(this);
+    mIntentFilter = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+            ? new IntentFilter(LocationManager.MODE_CHANGED_ACTION) : null;
   }
 
   /** Plugin registration. */
-  public static void registerWith(Registrar registrar) {
+  public static void registerWith(final Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "com.baseflow.flutter/location_permissions");
+    final EventChannel eventChannel = new EventChannel(registrar.messenger(), "com.baseflow.flutter/location_permissions_events");
     final LocationPermissionsPlugin locationPermissionsPlugin = new LocationPermissionsPlugin(registrar);
     channel.setMethodCallHandler(locationPermissionsPlugin);
+    eventChannel.setStreamHandler(locationPermissionsPlugin);
 
     registrar.addRequestPermissionsResultListener(new PluginRegistry.RequestPermissionsResultListener() {
       @Override
@@ -91,6 +106,18 @@ public class LocationPermissionsPlugin implements MethodCallHandler {
     });
   }
 
+  private void emitLocationServiceStatus(boolean enabled) {
+    if (mEventSink != null) {
+      mEventSink.success(enabled);
+    }
+  }
+
+  private void emitLocationServiceError(String message) {
+    if (mEventSink != null) {
+      mEventSink.error("", message, null);
+    }
+  }
+
   @Override
   public void onMethodCall(MethodCall call, Result result) {
     final Context context = getActiveContext();
@@ -102,16 +129,14 @@ public class LocationPermissionsPlugin implements MethodCallHandler {
     }
 
     switch (call.method) {
-      case "checkPermissionStatus": {
+      case "checkPermissionStatus":
         @PermissionStatus final int permissionStatus = LocationPermissionsPlugin.checkPermissionStatus(context);
         result.success(permissionStatus);
         break;
-      }
-      case "checkServiceStatus": {
+      case "checkServiceStatus":
         @ServiceStatus final int serviceStatus = LocationPermissionsPlugin.checkServiceStatus(context);
         result.success(serviceStatus);
         break;
-      }
       case "requestPermission":
         if (mResult != null) {
           result.error(
@@ -124,11 +149,10 @@ public class LocationPermissionsPlugin implements MethodCallHandler {
         mResult = result;
         requestPermissions();
         break;
-      case "shouldShowRequestPermissionRationale": {
+      case "shouldShowRequestPermissionRationale":
         final boolean shouldShow = LocationPermissionsPlugin.shouldShowRequestPermissionRationale(context);
         result.success(shouldShow);
         break;
-      }
       case "openAppSettings":
         boolean isOpen = LocationPermissionsPlugin.openAppSettings(context);
         result.success(isOpen);
@@ -136,6 +160,25 @@ public class LocationPermissionsPlugin implements MethodCallHandler {
       default:
         result.notImplemented();
         break;
+    }
+  }
+
+  @Override
+  public void onListen(Object arguments, EventSink events) {
+    events.success(isLocationServiceEnabled(mRegistrar.context()));
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+      mRegistrar.context().registerReceiver(mReceiver, mIntentFilter);
+      mEventSink = events;
+    } else {
+      throw new UnsupportedOperationException("Location service availability stream requires at least Android K.");
+    }
+  }
+
+  @Override
+  public void onCancel(Object arguments) {
+    if (mEventSink != null) {
+      mRegistrar.context().unregisterReceiver(mReceiver);
+      mEventSink = null;
     }
   }
 
@@ -354,5 +397,30 @@ public class LocationPermissionsPlugin implements MethodCallHandler {
 
   private Context getActiveContext() {
     return mRegistrar.activity() == null ? mRegistrar.activeContext() : mRegistrar.activity();
+  }
+
+  private static class LocationServiceBroadcastReceiver extends BroadcastReceiver {
+    private final LocationPermissionsPlugin locationPermissionsPlugin;
+
+    private LocationServiceBroadcastReceiver(LocationPermissionsPlugin locationPermissionsPlugin) {
+      this.locationPermissionsPlugin = locationPermissionsPlugin;
+    }
+
+    @Override
+      public void onReceive(Context context, Intent intent) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        boolean enabled;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+          enabled = locationManager.isLocationEnabled();
+        } else {
+          try {
+            enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+          } catch (SecurityException e) {
+            locationPermissionsPlugin.emitLocationServiceError(e.getMessage());
+            return;
+          }
+        }
+        locationPermissionsPlugin.emitLocationServiceStatus(enabled);
+      }
   }
 }

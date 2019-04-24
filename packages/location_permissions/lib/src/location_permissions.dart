@@ -7,6 +7,9 @@ import 'package:location_permissions/src/permission_enums.dart';
 class LocationPermissions {
   static const MethodChannel _channel =
       MethodChannel('com.baseflow.flutter/location_permissions');
+  static final EventChannel _eventChannel = Platform.isAndroid
+      ? const EventChannel('com.baseflow.flutter/location_permissions_events')
+      : null;
 
   /// Check current permission status.
   ///
@@ -68,5 +71,14 @@ class LocationPermissions {
         'shouldShowRequestPermissionRationale', permissionLevel.index);
 
     return shouldShowRationale;
+  }
+
+  /// Allows listening to the enabled/disabled state of the location service, currently only on Android.
+  ///
+  /// This is basically the streamified version of [checkPermissionStatus()].
+  static Stream<ServiceStatus> get serviceStatus {
+    assert(Platform.isAndroid);
+    return _eventChannel.receiveBroadcastStream().map((dynamic status) =>
+        status ? ServiceStatus.enabled : ServiceStatus.disabled);
   }
 }
