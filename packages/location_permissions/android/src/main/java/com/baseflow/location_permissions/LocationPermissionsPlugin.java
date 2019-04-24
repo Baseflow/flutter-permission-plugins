@@ -102,16 +102,14 @@ public class LocationPermissionsPlugin implements MethodCallHandler {
     }
 
     switch (call.method) {
-      case "checkPermissionStatus": {
+      case "checkPermissionStatus":
         @PermissionStatus final int permissionStatus = LocationPermissionsPlugin.checkPermissionStatus(context);
         result.success(permissionStatus);
         break;
-      }
-      case "checkServiceStatus": {
+      case "checkServiceStatus":
         @ServiceStatus final int serviceStatus = LocationPermissionsPlugin.checkServiceStatus(context);
         result.success(serviceStatus);
         break;
-      }
       case "requestPermission":
         if (mResult != null) {
           result.error(
@@ -124,11 +122,10 @@ public class LocationPermissionsPlugin implements MethodCallHandler {
         mResult = result;
         requestPermissions();
         break;
-      case "shouldShowRequestPermissionRationale": {
+      case "shouldShowRequestPermissionRationale":
         final boolean shouldShow = LocationPermissionsPlugin.shouldShowRequestPermissionRationale(context);
         result.success(shouldShow);
         break;
-      }
       case "openAppSettings":
         boolean isOpen = LocationPermissionsPlugin.openAppSettings(context);
         result.success(isOpen);
