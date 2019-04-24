@@ -23,13 +23,29 @@ class MyApp extends StatelessWidget {
         body: Center(
           child: ListView(
               children: LocationPermissionLevel.values
-                  .map((LocationPermissionLevel level) =>
-                      PermissionWidget(level))
-                  .toList()),
+                      .map<Widget>((LocationPermissionLevel level) =>
+                          PermissionWidget(level))
+                      .toList() +
+                  <Widget>[StreamingStatusWidget()]),
         ),
       ),
     );
   }
+}
+
+class StreamingStatusWidget extends StatelessWidget {
+  final Stream<ServiceStatus> statusStream = LocationPermissions.serviceStatus;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+        title: const Text('ServiceStatus'),
+        subtitle: StreamBuilder<ServiceStatus>(
+          stream: statusStream,
+          initialData: ServiceStatus.unknown,
+          builder: (_, AsyncSnapshot<ServiceStatus> snapshot) =>
+              Text('${snapshot.data}'),
+        ),
+      );
 }
 
 class PermissionWidget extends StatefulWidget {
