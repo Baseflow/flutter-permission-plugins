@@ -55,7 +55,6 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   private @interface PermissionStatus {
   }
 
-
   //SERVICE_STATUS
   private static final int SERVICE_STATUS_UNKNOWN = 0;
   private static final int SERVICE_STATUS_DISABLED = 1;
@@ -112,15 +111,9 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     }
   }
 
-  private void emitLocationServiceError(String message) {
-    if (mEventSink != null) {
-      mEventSink.error("", message, null);
-    }
-  }
-
   @Override
   public void onMethodCall(MethodCall call, Result result) {
-    final Context context = getActiveContext();
+    final Context context = mRegistrar.context();
 
     if (context == null) {
       Log.d(LOG_TAG, "Unable to detect current Activity or App Context.");
@@ -324,7 +317,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   @SuppressWarnings("deprecation")
   private static boolean isLocationServiceEnabled(Context context) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+    if (Build.VERSION.SDK_INT >= 28) {
       final LocationManager locationManager = context.getSystemService(LocationManager.class);
       if (locationManager == null) {
         return false;
@@ -395,10 +388,6 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     }
   }
 
-  private Context getActiveContext() {
-    return mRegistrar.activity() == null ? mRegistrar.activeContext() : mRegistrar.activity();
-  }
-
   private static class LocationServiceBroadcastReceiver extends BroadcastReceiver {
     private final LocationPermissionsPlugin locationPermissionsPlugin;
 
@@ -407,20 +396,8 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     }
 
     @Override
-      public void onReceive(Context context, Intent intent) {
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        boolean enabled;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-          enabled = locationManager.isLocationEnabled();
-        } else {
-          try {
-            enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-          } catch (SecurityException e) {
-            locationPermissionsPlugin.emitLocationServiceError(e.getMessage());
-            return;
-          }
-        }
-        locationPermissionsPlugin.emitLocationServiceStatus(enabled);
-      }
+    public void onReceive(Context context, Intent intent) {
+      locationPermissionsPlugin.emitLocationServiceStatus(isLocationServiceEnabled(context));
+    }
   }
 }
