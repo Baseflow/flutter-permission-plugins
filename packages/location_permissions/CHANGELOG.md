@@ -1,3 +1,9 @@
+## 2.0.0
+
+* **breaking** Changed from static to instance methods to improve testability;
+* Added support for CocoaPods `staticframework`;
+* Cleaned up some duplicated code to make code-base easier to maintain.
+
 ## 1.1.0
 
 * Adds support to listen for location service availability using a stream on Android (on iOS this is ignored, since it isn't supported by Apple);
