@@ -1,13 +1,13 @@
 # Flutter Location Permissions Plugin
 
-[![pub package](https://img.shields.io/pub/v/permission_handler.svg)](https://pub.dartlang.org/packages/permission_handler)
+[![pub package](https://img.shields.io/pub/v/location_permissions.svg)](https://pub.dartlang.org/packages/location_permissions)
 
 The Location Permissions plugin for Flutter. This plugin provides a cross-platform (iOS, Android) API to check and request permissions to access location services.
 
 Branch  | Build Status 
 ------- | ------------
-develop | [![Build Status](https://travis-ci.com/BaseflowIT/flutter-permission-handler.svg?branch=develop)](https://travis-ci.com/BaseflowIT/flutter-permission-handler)
-master  | [![Build Status](https://travis-ci.com/BaseflowIT/flutter-permission-handler.svg?branch=master)](https://travis-ci.com/BaseflowIT/flutter-permission-handler)
+develop | [![Build Status](https://travis-ci.com/BaseflowIT/flutter-permission-plugins.svg?branch=develop)](https://travis-ci.com/BaseflowIT/flutter-permission-plugins)
+master  | [![Build Status](https://travis-ci.com/BaseflowIT/flutter-permission-plugins.svg?branch=master)](https://travis-ci.com/BaseflowIT/flutter-permission-plugins)
 
 ## Features
 
@@ -22,7 +22,7 @@ To use this plugin, add `location_permissions` as a [dependency in your pubspec.
 
 ```yaml
 dependencies:
-  location_permissions: '^1.0.0'
+  location_permissions: '^2.0.0'
 ```
 
 ## API

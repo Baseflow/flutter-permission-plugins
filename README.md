@@ -1,4 +1,4 @@
-# Flutter Permission Handlers
+# Flutter Permission Plugins
 
 This repo contains a collection of permission related Flutter plugins which can be used to request permissions to access device resources in a cross-platform way.
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:location_permissions/location_permissions.dart';
 
@@ -14,7 +16,7 @@ class MyApp extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () {
-                LocationPermissions.openAppSettings().then((bool hasOpened) =>
+                LocationPermissions().openAppSettings().then((bool hasOpened) =>
                     debugPrint('App Settings opened: ' + hasOpened.toString()));
               },
             )
@@ -22,19 +24,29 @@ class MyApp extends StatelessWidget {
         ),
         body: Center(
           child: ListView(
-              children: LocationPermissionLevel.values
-                      .map<Widget>((LocationPermissionLevel level) =>
-                          PermissionWidget(level))
-                      .toList() +
-                  <Widget>[StreamingStatusWidget()]),
+            children: createWidgetList(),
+          ),
         ),
       ),
     );
   }
+
+  List<Widget> createWidgetList() {
+    final List<Widget> widgets = LocationPermissionLevel.values
+        .map<Widget>((LocationPermissionLevel level) => PermissionWidget(level))
+        .toList();
+
+    if (Platform.isAndroid) {
+      widgets.add(StreamingStatusWidget());
+    }
+
+    return widgets;
+  }
 }
 
 class StreamingStatusWidget extends StatelessWidget {
-  final Stream<ServiceStatus> statusStream = LocationPermissions.serviceStatus;
+  final Stream<ServiceStatus> statusStream =
+      LocationPermissions().serviceStatus;
 
   @override
   Widget build(BuildContext context) => ListTile(
@@ -72,7 +84,7 @@ class _PermissionState extends State<PermissionWidget> {
 
   void _listenForPermissionStatus() {
     final Future<PermissionStatus> statusFuture =
-        LocationPermissions.checkPermissionStatus();
+        LocationPermissions().checkPermissionStatus();
 
     statusFuture.then((PermissionStatus status) {
       setState(() {
@@ -113,7 +125,8 @@ class _PermissionState extends State<PermissionWidget> {
 
   void checkServiceStatus(
       BuildContext context, LocationPermissionLevel permissionLevel) {
-    LocationPermissions.checkServiceStatus()
+    LocationPermissions()
+        .checkServiceStatus()
         .then((ServiceStatus serviceStatus) {
       final SnackBar snackBar =
           SnackBar(content: Text(serviceStatus.toString()));
@@ -124,9 +137,8 @@ class _PermissionState extends State<PermissionWidget> {
 
   Future<void> requestPermission(
       LocationPermissionLevel permissionLevel) async {
-    final PermissionStatus permissionRequestResult =
-        await LocationPermissions.requestPermissions(
-            permissionLevel: permissionLevel);
+    final PermissionStatus permissionRequestResult = await LocationPermissions()
+        .requestPermissions(permissionLevel: permissionLevel);
 
     setState(() {
       print(permissionRequestResult);
