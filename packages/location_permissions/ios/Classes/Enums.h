@@ -6,21 +6,21 @@
 //
 
 typedef NS_ENUM(int, PermissionLevel) {
-    PermissionLevelLocation = 0,
-    PermissionLevelLocationAlways,
-    PermissionLevelLocationWhenInUse,
- };
+  PermissionLevelLocation = 0,
+  PermissionLevelLocationAlways,
+  PermissionLevelLocationWhenInUse,
+};
 
 typedef NS_ENUM(int, PermissionStatus) {
-    PermissionStatusUnknown = 0,
-    PermissionStatusDenied,
-    PermissionStatusGranted,
-    PermissionStatusRestricted,
+  PermissionStatusUnknown = 0,
+  PermissionStatusDenied,
+  PermissionStatusGranted,
+  PermissionStatusRestricted,
 };
 
 typedef NS_ENUM(int, ServiceStatus) {
-    ServiceStatusUnknown = 0,
-    ServiceStatusDisabled,
-    ServiceStatusEnabled,
-    ServiceStatusNotApplicable,
+  ServiceStatusUnknown = 0,
+  ServiceStatusDisabled,
+  ServiceStatusEnabled,
+  ServiceStatusNotApplicable,
 };
