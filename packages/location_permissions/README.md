@@ -22,7 +22,7 @@ To use this plugin, add `location_permissions` as a [dependency in your pubspec.
 
 ```yaml
 dependencies:
-  location_permissions: '^1.0.0'
+  location_permissions: '^2.0.0'
 ```
 
 ## API
