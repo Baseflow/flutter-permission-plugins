@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:location_permissions/location_permissions.dart';
 
@@ -22,14 +24,23 @@ class MyApp extends StatelessWidget {
         ),
         body: Center(
           child: ListView(
-              children: LocationPermissionLevel.values
-                      .map<Widget>((LocationPermissionLevel level) =>
-                          PermissionWidget(level))
-                      .toList() +
-                  <Widget>[StreamingStatusWidget()]),
+            children: createWidgetList(),
+          ),
         ),
       ),
     );
+  }
+
+  List<Widget> createWidgetList() {
+    final List<Widget> widgets = LocationPermissionLevel.values
+        .map<Widget>((LocationPermissionLevel level) => PermissionWidget(level))
+        .toList();
+
+    if (Platform.isAndroid) {
+      widgets.add(StreamingStatusWidget());
+    }
+
+    return widgets;
   }
 }
 

@@ -77,7 +77,8 @@ class LocationPermissions {
   ///
   /// This is basically the streamified version of [checkPermissionStatus()].
   static Stream<ServiceStatus> get serviceStatus {
-    assert(Platform.isAndroid);
+    assert(Platform.isAndroid, 'Listening to service state changes is only supported on Android.');
+
     return _eventChannel.receiveBroadcastStream().map((dynamic status) =>
         status ? ServiceStatus.enabled : ServiceStatus.disabled);
   }
