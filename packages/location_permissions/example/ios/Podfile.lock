@@ -1,6 +1,6 @@
 PODS:
   - Flutter (1.0.0)
-  - location_permissions (1.1.0):
+  - location_permissions (2.0.0):
     - Flutter
 
 DEPENDENCIES:
@@ -15,7 +15,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: 9d0fac939486c9aba2809b7982dfdbb47a7b0296
-  location_permissions: 38516c6909bacfd80192b13e7891c79fa207d4a8
+  location_permissions: e887f37f31e947f676351c7d0363ec6de6ca31f5
 
 PODFILE CHECKSUM: aff02bfeed411c636180d6812254b2daeea14d09
 
