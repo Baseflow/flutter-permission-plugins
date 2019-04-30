@@ -32,7 +32,7 @@ dependencies:
 ```dart
 import 'package:location_permissions/location_permissions.dart';
 
-PermissionStatus permission = await LocationPermissions.requestPermissions();
+PermissionStatus permission = await LocationPermissions().requestPermissions();
 ```
 
 ### Checking permission
@@ -40,7 +40,7 @@ PermissionStatus permission = await LocationPermissions.requestPermissions();
 ```dart
 import 'package:location_permissions/location_permissions.dart';
 
-PermissionStatus permission = await LocationPermissions.checkPermissionStatus();
+PermissionStatus permission = await LocationPermissions().checkPermissionStatus();
 ```
 
 ### Checking service status
@@ -48,7 +48,7 @@ PermissionStatus permission = await LocationPermissions.checkPermissionStatus();
 ```dart
 import 'package:location_permissions/location_permissions.dart';
 
-ServiceStatus serviceStatus = await LocationPermissions.checkServiceStatus();
+ServiceStatus serviceStatus = await LocationPermissions().checkServiceStatus();
 ```
 
 ### Open app settings
@@ -56,7 +56,7 @@ ServiceStatus serviceStatus = await LocationPermissions.checkServiceStatus();
 ```dart
 import 'package:location_permissions/location_permissions.dart';
 
-bool isOpened = await LocationPermissions.openAppSettings();
+bool isOpened = await LocationPermissions().openAppSettings();
 ```
 
 ### Show a rationale for requesting permission (Android only)
@@ -64,7 +64,7 @@ bool isOpened = await LocationPermissions.openAppSettings();
 ```dart
 import 'package:location_permissions/location_permissions.dart';
 
-bool isShown = await LocationPermissions.shouldShowRequestPermissionRationale();
+bool isShown = await LocationPermissions().shouldShowRequestPermissionRationale();
 ```
 
 This will always return `false` on iOS.
