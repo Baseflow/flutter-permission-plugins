@@ -7,8 +7,8 @@
 
 typedef NS_ENUM(int, PermissionLevel) {
   PermissionLevelLocation = 0,
-  PermissionLevelLocationAlways,
   PermissionLevelLocationWhenInUse,
+  PermissionLevelLocationAlways,
 };
 
 typedef NS_ENUM(int, PermissionStatus) {
