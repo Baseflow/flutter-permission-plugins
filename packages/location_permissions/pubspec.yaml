@@ -1,7 +1,7 @@
 name: location_permissions
 description: Location permission plugin for Flutter. This plugin provides a cross-platform (iOS, Android) API to check and request access to the location services on the
   device.
-version: 2.0.0
+version: 2.0.1
 authors:
   - Baseflow <hello@baseflow.com>
 homepage: https://github.com/BaseflowIT/flutter-permission-plugins/tree/develop/packages/location_permissions 
