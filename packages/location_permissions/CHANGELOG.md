@@ -1,3 +1,8 @@
+## 2.0.1
+
+* Fixed a bug where permissions on iOS are not requested in some cases;
+* Updated examples in the README to match the instance methods introduced in version 2.0.0.
+
 ## 2.0.0
 
 * **breaking** Changed from static to instance methods to improve testability;
