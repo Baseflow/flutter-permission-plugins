@@ -149,8 +149,10 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
         requestPermissions();
         break;
       case "shouldShowRequestPermissionRationale":
+        final Activity activity = mRegistrar.activity();
         final boolean shouldShow =
-            LocationPermissionsPlugin.shouldShowRequestPermissionRationale(context);
+            LocationPermissionsPlugin.shouldShowRequestPermissionRationale(activity);
+
         result.success(shouldShow);
         break;
       case "openAppSettings":
@@ -368,13 +370,11 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     }
   }
 
-  private static boolean shouldShowRequestPermissionRationale(Context context) {
-    if (!(context instanceof Activity)) {
+  private static boolean shouldShowRequestPermissionRationale(Activity activity) {
+    if (activity == null) {
       Log.e(LOG_TAG, "Unable to detect current Activity.");
       return false;
     }
-
-    final Activity activity = (Activity) context;
 
     List<String> names = getManifestNames(activity);
 
