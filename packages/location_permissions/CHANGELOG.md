@@ -1,3 +1,7 @@
+## 2.0.2
+
+* Fixed bug where method `shouldShowRequestPermissionRationale` always returns `false`.
+
 ## 2.0.1
 
 * Fixed a bug where permissions on iOS are not requested in some cases;
