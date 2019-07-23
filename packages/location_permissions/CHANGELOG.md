@@ -1,5 +1,6 @@
 ## 2.0.2
 
+* Fixed bug where method `shouldShowRequestPermissionRationale` always returns `false`.
 * Update dependency on meta plugin
 
 ## 2.0.1
