@@ -26,6 +26,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.flutter.view.FlutterNativeView;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /** LocationPermissionsPlugin */
-public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandler {
+public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandler, PluginRegistry.ViewDestroyListener {
   private static final String LOG_TAG = "location_permissions";
   private static final int PERMISSION_CODE = 25;
 
@@ -92,6 +93,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
         new LocationPermissionsPlugin(registrar);
     channel.setMethodCallHandler(locationPermissionsPlugin);
     eventChannel.setStreamHandler(locationPermissionsPlugin);
+    registrar.addViewDestroyListener(locationPermissionsPlugin);
 
     registrar.addRequestPermissionsResultListener(
         new PluginRegistry.RequestPermissionsResultListener() {
@@ -181,6 +183,15 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
       mRegistrar.context().unregisterReceiver(mReceiver);
       mEventSink = null;
     }
+  }
+
+  @Override
+  public boolean onViewDestroy(FlutterNativeView flutterNativeView) {
+    if (mEventSink != null) {
+      mRegistrar.context().unregisterReceiver(mReceiver);
+      mEventSink = null;
+    }
+    return false;
   }
 
   @PermissionStatus
