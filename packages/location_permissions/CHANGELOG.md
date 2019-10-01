@@ -1,3 +1,8 @@
+## 2.0.3
+
+* Added support for Android 10 background permissions;
+* Ensure `shouldShowRequestPermissionRationale` is executed on the Android Activity.
+
 ## 2.0.2
 
 * Fixed bug where method `shouldShowRequestPermissionRationale` always returns `false`.
