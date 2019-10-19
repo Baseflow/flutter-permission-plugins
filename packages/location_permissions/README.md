@@ -35,11 +35,11 @@ dependencies:
 >android.useAndroidX=true
 >android.enableJetifier=true
 >```
->2. Make sure you set the `compileSdkVersion` in your "android/app/build.gradle" file to 28:
+>2. Make sure you set the `compileSdkVersion` in your "android/app/build.gradle" file to 28 or higher:
 >
 >```
 >android {
->  compileSdkVersion 29
+>  compileSdkVersion 28
 >
 >  ...
 >}
