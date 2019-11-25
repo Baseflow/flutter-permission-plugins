@@ -42,6 +42,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   private static final int PERMISSION_STATUS_DENIED = 1;
   private static final int PERMISSION_STATUS_GRANTED = 2;
   private static final int PERMISSION_STATUS_RESTRICTED = 3;
+  private static final int PERMISSION_STATUS_WHILE_IN_USE = 4;
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
@@ -49,6 +50,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     PERMISSION_STATUS_DENIED,
     PERMISSION_STATUS_GRANTED,
     PERMISSION_STATUS_RESTRICTED,
+          PERMISSION_STATUS_WHILE_IN_USE,
   })
   private @interface PermissionStatus {}
 
@@ -57,6 +59,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   private static final int SERVICE_STATUS_DISABLED = 1;
   private static final int SERVICE_STATUS_ENABLED = 2;
   private static final int SERVICE_STATUS_NOT_APPLICABLE = 3;
+  private static final int SERVICE_STATUS_WHILE_IN_USE = 4;
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
@@ -64,6 +67,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     SERVICE_STATUS_ENABLED,
     SERVICE_STATUS_NOT_APPLICABLE,
     SERVICE_STATUS_UNKNOWN,
+          SERVICE_STATUS_WHILE_IN_USE,
   })
   private @interface ServiceStatus {}
 
@@ -278,6 +282,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     processResult(PERMISSION_STATUS_UNKNOWN);
   }
 
+
   private static Boolean isLocationPermission(String permission) {
     return permission.equals(Manifest.permission.ACCESS_COARSE_LOCATION)
             || permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -289,6 +294,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     return grantResult == PackageManager.PERMISSION_GRANTED
         ? PERMISSION_STATUS_GRANTED
         : PERMISSION_STATUS_DENIED;
+//        ? PERMISSION_STATUS_WHILEINUSE;
   }
 
   private void processResult(@PermissionStatus int status) {
