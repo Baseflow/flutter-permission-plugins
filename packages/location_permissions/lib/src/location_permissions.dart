@@ -9,13 +9,14 @@ class LocationPermissions {
   factory LocationPermissions() {
     if (_instance == null) {
       const MethodChannel methodChannel =
-          MethodChannel('com.baseflow.flutter/location_permissions');
+      MethodChannel('com.baseflow.flutter/location_permissions');
       final EventChannel eventChannel = Platform.isAndroid
           ? const EventChannel(
-              'com.baseflow.flutter/location_permissions_events')
+          'com.baseflow.flutter/location_permissions_events')
           : null;
 
       _instance = LocationPermissions.private(methodChannel, eventChannel);
+
     }
     return _instance;
   }
@@ -24,6 +25,7 @@ class LocationPermissions {
   LocationPermissions.private(this._methodChannel, this._eventChannel);
 
   static LocationPermissions _instance;
+
 
   final MethodChannel _methodChannel;
   final EventChannel _eventChannel;
@@ -35,7 +37,7 @@ class LocationPermissions {
       {LocationPermissionLevel level =
           LocationPermissionLevel.location}) async {
     final int status =
-        await _methodChannel.invokeMethod('checkPermissionStatus', level.index);
+    await _methodChannel.invokeMethod('checkPermissionStatus', level.index);
 
     return PermissionStatus.values[status];
   }
@@ -47,7 +49,7 @@ class LocationPermissions {
       {LocationPermissionLevel level =
           LocationPermissionLevel.location}) async {
     final int status =
-        await _methodChannel.invokeMethod('checkServiceStatus', level.index);
+    await _methodChannel.invokeMethod('checkServiceStatus', level.index);
 
     return ServiceStatus.values[status];
   }
@@ -95,9 +97,25 @@ class LocationPermissions {
   /// This is basically the stream version of [checkPermissionStatus()].
   Stream<ServiceStatus> get serviceStatus {
     assert(Platform.isAndroid,
-        'Listening to service state changes is only supported on Android.');
+    'Listening to service state changes is only supported on Android.');
 
     return _eventChannel.receiveBroadcastStream().map((dynamic status) =>
-        status ? ServiceStatus.enabled : ServiceStatus.disabled);
+    status ? ServiceStatus.enabled : ServiceStatus.disabled );
+  }
+
+
+
+
+  /// Returns a [Future<PermissionWhileInUse>] containing the while in use permission status. Currently only on Android
+  Future<PermissionStatus> requestPermissionsWhileInUse(
+      {LocationPermissionLevel permissionLevel =
+          LocationPermissionLevel.locationWhileInUse}) async {
+    final int status = await _methodChannel.invokeMethod(
+        'requestPermissionWhenInUse', permissionLevel.index);
+
+    return PermissionStatus.values[status];
+//    return PermissionStatus.whileInUse;
   }
 }
+
+

@@ -39,7 +39,6 @@ class MyApp extends StatelessWidget {
     if (Platform.isAndroid) {
       widgets.add(StreamingStatusWidget());
     }
-
     return widgets;
   }
 }
@@ -48,16 +47,17 @@ class StreamingStatusWidget extends StatelessWidget {
   final Stream<ServiceStatus> statusStream =
       LocationPermissions().serviceStatus;
 
+
   @override
   Widget build(BuildContext context) => ListTile(
-        title: const Text('ServiceStatus'),
-        subtitle: StreamBuilder<ServiceStatus>(
-          stream: statusStream,
-          initialData: ServiceStatus.unknown,
-          builder: (_, AsyncSnapshot<ServiceStatus> snapshot) =>
-              Text('${snapshot.data}'),
-        ),
-      );
+    title: const Text('ServiceStatus'),
+    subtitle: StreamBuilder<ServiceStatus>(
+      stream: statusStream,
+      initialData: ServiceStatus.unknown,
+      builder: (_, AsyncSnapshot<ServiceStatus> snapshot) =>
+          Text('${snapshot.data}'),
+    ),
+  );
 }
 
 class PermissionWidget extends StatefulWidget {
@@ -84,7 +84,7 @@ class _PermissionState extends State<PermissionWidget> {
 
   void _listenForPermissionStatus() {
     final Future<PermissionStatus> statusFuture =
-        LocationPermissions().checkPermissionStatus();
+    LocationPermissions().checkPermissionStatus(level: LocationPermissionLevel.locationWhileInUse);
 
     statusFuture.then((PermissionStatus status) {
       setState(() {
@@ -93,12 +93,15 @@ class _PermissionState extends State<PermissionWidget> {
     });
   }
 
+
   Color getPermissionColor() {
     switch (_permissionStatus) {
       case PermissionStatus.denied:
         return Colors.red;
       case PermissionStatus.granted:
         return Colors.green;
+      case PermissionStatus.whileInUse:
+        return Colors.blue;
       default:
         return Colors.grey;
     }
@@ -118,7 +121,7 @@ class _PermissionState extends State<PermissionWidget> {
             checkServiceStatus(context, _permissionLevel);
           }),
       onTap: () {
-        requestPermission(_permissionLevel);
+        requestPermissionWhileInUse(_permissionLevel);
       },
     );
   }
@@ -129,16 +132,18 @@ class _PermissionState extends State<PermissionWidget> {
         .checkServiceStatus()
         .then((ServiceStatus serviceStatus) {
       final SnackBar snackBar =
-          SnackBar(content: Text(serviceStatus.toString()));
+      SnackBar(content: Text(serviceStatus.toString()));
 
       Scaffold.of(context).showSnackBar(snackBar);
     });
   }
 
-  Future<void> requestPermission(
+  Future<void> requestPermissionWhileInUse(
       LocationPermissionLevel permissionLevel) async {
     final PermissionStatus permissionRequestResult = await LocationPermissions()
-        .requestPermissions(permissionLevel: permissionLevel);
+        .requestPermissions(permissionLevel: LocationPermissionLevel.location);
+
+    LocationPermissions().checkPermissionStatus(level: LocationPermissionLevel.locationWhileInUse);
 
     setState(() {
       print(permissionRequestResult);
