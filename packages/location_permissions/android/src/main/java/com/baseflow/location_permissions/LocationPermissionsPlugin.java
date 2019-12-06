@@ -42,13 +42,15 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   private static final int PERMISSION_STATUS_DENIED = 1;
   private static final int PERMISSION_STATUS_GRANTED = 2;
   private static final int PERMISSION_STATUS_RESTRICTED = 3;
+  private static final int PERMISSION_STATUS_WHEN_IN_USE = 4;
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
-    PERMISSION_STATUS_UNKNOWN,
-    PERMISSION_STATUS_DENIED,
-    PERMISSION_STATUS_GRANTED,
-    PERMISSION_STATUS_RESTRICTED,
+          PERMISSION_STATUS_UNKNOWN,
+          PERMISSION_STATUS_DENIED,
+          PERMISSION_STATUS_GRANTED,
+          PERMISSION_STATUS_RESTRICTED,
+          PERMISSION_STATUS_WHEN_IN_USE,
   })
   private @interface PermissionStatus {}
 
@@ -58,12 +60,13 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   private static final int SERVICE_STATUS_ENABLED = 2;
   private static final int SERVICE_STATUS_NOT_APPLICABLE = 3;
 
+
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
-    SERVICE_STATUS_DISABLED,
-    SERVICE_STATUS_ENABLED,
-    SERVICE_STATUS_NOT_APPLICABLE,
-    SERVICE_STATUS_UNKNOWN,
+          SERVICE_STATUS_DISABLED,
+          SERVICE_STATUS_ENABLED,
+          SERVICE_STATUS_NOT_APPLICABLE,
+          SERVICE_STATUS_UNKNOWN,
   })
   private @interface ServiceStatus {}
 
@@ -77,35 +80,35 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     this.mRegistrar = mRegistrar;
     mReceiver = new LocationServiceBroadcastReceiver(this);
     mIntentFilter =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
-            ? new IntentFilter(LocationManager.MODE_CHANGED_ACTION)
-            : null;
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+                    ? new IntentFilter(LocationManager.MODE_CHANGED_ACTION)
+                    : null;
   }
 
   /** Plugin registration. */
   public static void registerWith(final Registrar registrar) {
     final MethodChannel channel =
-        new MethodChannel(registrar.messenger(), "com.baseflow.flutter/location_permissions");
+            new MethodChannel(registrar.messenger(), "com.baseflow.flutter/location_permissions");
     final EventChannel eventChannel =
-        new EventChannel(registrar.messenger(), "com.baseflow.flutter/location_permissions_events");
+            new EventChannel(registrar.messenger(), "com.baseflow.flutter/location_permissions_events");
     final LocationPermissionsPlugin locationPermissionsPlugin =
-        new LocationPermissionsPlugin(registrar);
+            new LocationPermissionsPlugin(registrar);
     channel.setMethodCallHandler(locationPermissionsPlugin);
     eventChannel.setStreamHandler(locationPermissionsPlugin);
 
     registrar.addRequestPermissionsResultListener(
-        new PluginRegistry.RequestPermissionsResultListener() {
-          @Override
-          public boolean onRequestPermissionsResult(
-              int id, String[] permissions, int[] grantResults) {
-            if (id == PERMISSION_CODE) {
-              locationPermissionsPlugin.handlePermissionsRequest(permissions, grantResults);
-              return true;
-            } else {
-              return false;
-            }
-          }
-        });
+            new PluginRegistry.RequestPermissionsResultListener() {
+              @Override
+              public boolean onRequestPermissionsResult(
+                      int id, String[] permissions, int[] grantResults) {
+                if (id == PERMISSION_CODE) {
+                  locationPermissionsPlugin.handlePermissionsRequest(permissions, grantResults);
+                  return true;
+                } else {
+                  return false;
+                }
+              }
+            });
   }
 
   private void emitLocationServiceStatus(boolean enabled) {
@@ -121,7 +124,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     if (context == null) {
       Log.d(LOG_TAG, "Unable to detect current Activity or App Context.");
       result.error(
-          "ERROR_MISSING_CONTEXT", "Unable to detect current Activity or Active Context.", null);
+              "ERROR_MISSING_CONTEXT", "Unable to detect current Activity or Active Context.", null);
       return;
     }
 
@@ -139,9 +142,9 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
       case "requestPermission":
         if (mResult != null) {
           result.error(
-              "ERROR_ALREADY_REQUESTING_PERMISSIONS",
-              "A request for permissions is already running, please wait for it to finish before doing another request (note that you can request multiple permissions at the same time).",
-              null);
+                  "ERROR_ALREADY_REQUESTING_PERMISSIONS",
+                  "A request for permissions is already running, please wait for it to finish before doing another request (note that you can request multiple permissions at the same time).",
+                  null);
           return;
         }
 
@@ -151,7 +154,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
       case "shouldShowRequestPermissionRationale":
         final Activity activity = mRegistrar.activity();
         final boolean shouldShow =
-            LocationPermissionsPlugin.shouldShowRequestPermissionRationale(activity);
+                LocationPermissionsPlugin.shouldShowRequestPermissionRationale(activity);
 
         result.success(shouldShow);
         break;
@@ -173,7 +176,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
       mEventSink = events;
     } else {
       throw new UnsupportedOperationException(
-          "Location service availability stream requires at least Android K.");
+              "Location service availability stream requires at least Android K.");
     }
   }
 
@@ -206,7 +209,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     }
 
     final boolean targetsMOrHigher =
-        context.getApplicationInfo().targetSdkVersion >= android.os.Build.VERSION_CODES.M;
+            context.getApplicationInfo().targetSdkVersion >= android.os.Build.VERSION_CODES.M;
 
     for (String name : names) {
       if (targetsMOrHigher) {
@@ -216,6 +219,9 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
         } else if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
           return PERMISSION_STATUS_UNKNOWN;
         }
+        // else if(permissionStatus == PackageManager.PERMISSION_WHEN_IN_USE) {
+        //   return PERMISSION_STATUS_WHEN_IN_USE;
+        // }
       }
     }
 
@@ -254,7 +260,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
       }
 
       ActivityCompat.requestPermissions(
-          mRegistrar.activity(), names.toArray(new String[0]), PERMISSION_CODE);
+              mRegistrar.activity(), names.toArray(new String[0]), PERMISSION_CODE);
     } else {
       processResult(PERMISSION_STATUS_GRANTED);
     }
@@ -278,6 +284,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     processResult(PERMISSION_STATUS_UNKNOWN);
   }
 
+  /**LocationPermissions returns foreground or background access when the permission is equal*/
   private static Boolean isLocationPermission(String permission) {
     return permission.equals(Manifest.permission.ACCESS_COARSE_LOCATION)
             || permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -287,8 +294,9 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   @PermissionStatus
   private int toPermissionStatus(int grantResult) {
     return grantResult == PackageManager.PERMISSION_GRANTED
-        ? PERMISSION_STATUS_GRANTED
-        : PERMISSION_STATUS_DENIED;
+            ? PERMISSION_STATUS_GRANTED
+            : PERMISSION_STATUS_DENIED;
+//        ? PERMISSION_STATUS_WHEN_IN_USE;
   }
 
   private void processResult(@PermissionStatus int status) {
@@ -296,6 +304,8 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     mResult = null;
   }
 
+
+  /**Returning Manifest permissions*/
   private static List<String> getManifestNames(Context context) {
     final ArrayList<String> permissionNames = new ArrayList<>();
 
@@ -317,19 +327,19 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   private static boolean hasPermissionInManifest(String permission, Context context) {
     try {
       PackageInfo info =
-          context
-              .getPackageManager()
-              .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
+              context
+                      .getPackageManager()
+                      .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
 
       if (info == null) {
         Log.d(
-            LOG_TAG,
-            "Unable to get Package info, will not be able to determine permissions to request.");
+                LOG_TAG,
+                "Unable to get Package info, will not be able to determine permissions to request.");
         return false;
       }
 
       final List<String> manifestPermissions =
-          new ArrayList<>(Arrays.asList(info.requestedPermissions));
+              new ArrayList<>(Arrays.asList(info.requestedPermissions));
       for (String r : manifestPermissions) {
         if (r.equals(permission)) {
           return true;
@@ -355,7 +365,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
       try {
         locationMode =
-            Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+                Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
       } catch (Settings.SettingNotFoundException e) {
         e.printStackTrace();
         return false;
@@ -364,8 +374,8 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
       return locationMode != Settings.Secure.LOCATION_MODE_OFF;
     } else {
       final String locationProviders =
-          Settings.Secure.getString(
-              context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+              Settings.Secure.getString(
+                      context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
       return !TextUtils.isEmpty(locationProviders);
     }
   }
@@ -386,12 +396,12 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
     if (names.isEmpty()) {
       Log.d(
-          LOG_TAG,
-          "No permissions found in manifest for: $permission no need to show request rationale");
+              LOG_TAG,
+              "No permissions found in manifest for: $permission no need to show request rationale");
       return false;
     }
 
-    //noinspection LoopStatementThatDoesntLoop
+    //no inspection LoopStatementThatDoesntLoop
     for (String name : names) {
       return ActivityCompat.shouldShowRequestPermissionRationale(activity, name);
     }

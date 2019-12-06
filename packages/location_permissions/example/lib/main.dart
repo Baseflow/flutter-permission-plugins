@@ -84,7 +84,7 @@ class _PermissionState extends State<PermissionWidget> {
 
   void _listenForPermissionStatus() {
     final Future<PermissionStatus> statusFuture =
-    LocationPermissions().checkPermissionStatus(level: LocationPermissionLevel.locationWhileInUse);
+    LocationPermissions().checkPermissionStatus(level: LocationPermissionLevel.location);
 
     statusFuture.then((PermissionStatus status) {
       setState(() {
@@ -100,7 +100,7 @@ class _PermissionState extends State<PermissionWidget> {
         return Colors.red;
       case PermissionStatus.granted:
         return Colors.green;
-      case PermissionStatus.whileInUse:
+      case PermissionStatus.whenInUse:
         return Colors.blue;
       default:
         return Colors.grey;
@@ -121,7 +121,7 @@ class _PermissionState extends State<PermissionWidget> {
             checkServiceStatus(context, _permissionLevel);
           }),
       onTap: () {
-        requestPermissionWhileInUse(_permissionLevel);
+        requestPermission(_permissionLevel);
       },
     );
   }
@@ -138,12 +138,12 @@ class _PermissionState extends State<PermissionWidget> {
     });
   }
 
-  Future<void> requestPermissionWhileInUse(
+  Future<void> requestPermission(
       LocationPermissionLevel permissionLevel) async {
     final PermissionStatus permissionRequestResult = await LocationPermissions()
         .requestPermissions(permissionLevel: LocationPermissionLevel.location);
 
-    LocationPermissions().checkPermissionStatus(level: LocationPermissionLevel.locationWhileInUse);
+    LocationPermissions().checkPermissionStatus(level: LocationPermissionLevel.location);
 
     setState(() {
       print(permissionRequestResult);

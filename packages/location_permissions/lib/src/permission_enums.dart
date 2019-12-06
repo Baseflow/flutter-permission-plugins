@@ -1,6 +1,6 @@
 enum LocationPermissionLevel {
   location,
-  locationWhileInUse,
+  locationWhenInUse,
   locationAlways,
 }
 
@@ -9,7 +9,7 @@ enum PermissionStatus {
   denied,
   granted,
   restricted,
-  whileInUse,
+  whenInUse,
 }
 
 enum ServiceStatus {
@@ -17,5 +17,5 @@ enum ServiceStatus {
   disabled,
   enabled,
   notApplicable,
-  whileInUse,
+  whenInUse,
 }

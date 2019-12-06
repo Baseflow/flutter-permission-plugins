@@ -102,20 +102,6 @@ class LocationPermissions {
     return _eventChannel.receiveBroadcastStream().map((dynamic status) =>
     status ? ServiceStatus.enabled : ServiceStatus.disabled );
   }
-
-
-
-
-  /// Returns a [Future<PermissionWhileInUse>] containing the while in use permission status. Currently only on Android
-  Future<PermissionStatus> requestPermissionsWhileInUse(
-      {LocationPermissionLevel permissionLevel =
-          LocationPermissionLevel.locationWhileInUse}) async {
-    final int status = await _methodChannel.invokeMethod(
-        'requestPermissionWhenInUse', permissionLevel.index);
-
-    return PermissionStatus.values[status];
-//    return PermissionStatus.whileInUse;
-  }
 }
 
 
