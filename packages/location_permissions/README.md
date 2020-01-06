@@ -22,7 +22,7 @@ To use this plugin, add `location_permissions` as a [dependency in your pubspec.
 
 ```yaml
 dependencies:
-  location_permissions: '^2.0.3'
+  location_permissions: ^2.0.4
 ```
 
 > **NOTE:** The location_permissions plugin uses the AndroidX version of the Android Support Libraries. This means you need to make sure your Android project is also upgraded to support AndroidX. Detailed instructions can be found [here](https://flutter.dev/docs/development/packages-and-plugins/androidx-compatibility). 
