@@ -22,7 +22,7 @@ To use this plugin, add `location_permissions` as a [dependency in your pubspec.
 
 ```yaml
 dependencies:
-  location_permissions: '^2.0.3'
+  location_permissions: ^2.0.4
 ```
 
 > **NOTE:** The location_permissions plugin uses the AndroidX version of the Android Support Libraries. This means you need to make sure your Android project is also upgraded to support AndroidX. Detailed instructions can be found [here](https://flutter.dev/docs/development/packages-and-plugins/androidx-compatibility). 
@@ -35,11 +35,11 @@ dependencies:
 >android.useAndroidX=true
 >android.enableJetifier=true
 >```
->2. Make sure you set the `compileSdkVersion` in your "android/app/build.gradle" file to 28:
+>2. Make sure you set the `compileSdkVersion` in your "android/app/build.gradle" file to 28 or higher:
 >
 >```
 >android {
->  compileSdkVersion 29
+>  compileSdkVersion 28
 >
 >  ...
 >}
@@ -157,7 +157,7 @@ Please file any issues, bugs or feature request as an issue on our [GitHub](http
 
 ## Want to contribute
 
-If you would like to contribute to the plugin (e.g. by improving the documentation, solving a bug or adding a cool new feature), please carefully review our [contribution guide](CONTRIBUTING.md) and send us your [pull request](https://github.com/BaseflowIT/flutter-permission-handlers/pulls).
+If you would like to contribute to the plugin (e.g. by improving the documentation, solving a bug or adding a cool new feature), please carefully review our [contribution guide](https://github.com/Baseflow/flutter-permission-plugins/blob/develop/CONTRIBUTING.md) and send us your [pull request](https://github.com/BaseflowIT/flutter-permission-handlers/pulls).
 
 ## Author
 
