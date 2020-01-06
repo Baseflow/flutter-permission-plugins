@@ -1,3 +1,8 @@
+## 2.0.4
+
+* Synchronized Gradle and Gradle Wrapper with Flutter stable (1.12.13+hotfix.5)
+* Added support for Flutter analysis
+
 ## 2.0.3
 
 * Added support for Android 10 background permissions;
