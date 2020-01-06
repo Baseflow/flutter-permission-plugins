@@ -1,3 +1,7 @@
+## 2.0.4+1
+
+* Fixed merge conflict
+
 ## 2.0.4
 
 * Synchronized Gradle and Gradle Wrapper with Flutter stable (1.12.13+hotfix.5)
