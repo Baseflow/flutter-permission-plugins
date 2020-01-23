@@ -9,7 +9,6 @@ enum PermissionStatus {
   denied,
   granted,
   restricted,
-  whenInUse,
 }
 
 enum ServiceStatus {
@@ -17,5 +16,4 @@ enum ServiceStatus {
   disabled,
   enabled,
   notApplicable,
-  whenInUse,
 }

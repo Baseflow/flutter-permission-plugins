@@ -100,8 +100,6 @@ class _PermissionState extends State<PermissionWidget> {
         return Colors.red;
       case PermissionStatus.granted:
         return Colors.green;
-      case PermissionStatus.whenInUse:
-        return Colors.blue;
       default:
         return Colors.grey;
     }
