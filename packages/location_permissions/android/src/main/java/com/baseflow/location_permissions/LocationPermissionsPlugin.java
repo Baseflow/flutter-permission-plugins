@@ -42,7 +42,6 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   private static final int PERMISSION_STATUS_DENIED = 1;
   private static final int PERMISSION_STATUS_GRANTED = 2;
   private static final int PERMISSION_STATUS_RESTRICTED = 3;
-  private static final int PERMISSION_STATUS_WHEN_IN_USE = 4;
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
@@ -50,7 +49,6 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
           PERMISSION_STATUS_DENIED,
           PERMISSION_STATUS_GRANTED,
           PERMISSION_STATUS_RESTRICTED,
-          PERMISSION_STATUS_WHEN_IN_USE,
   })
   private @interface PermissionStatus {}
 
@@ -134,6 +132,16 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
         final int permissionStatus = LocationPermissionsPlugin.checkPermissionStatus(context);
         result.success(permissionStatus);
         break;
+      case "checkBackgroundPermissionStatus":
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+          if (hasPermissionInManifest(Manifest.permission.ACCESS_BACKGROUND_LOCATION, context)) {
+            checkPermissionStatus(context);
+          }
+        }
+        else {
+          return;
+        }
+            break;
       case "checkServiceStatus":
         @ServiceStatus
         final int serviceStatus = LocationPermissionsPlugin.checkServiceStatus(context);
@@ -147,7 +155,6 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
                   null);
           return;
         }
-
         mResult = result;
         requestPermissions();
         break;
@@ -219,9 +226,6 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
         } else if (permissionStatus != PackageManager.PERMISSION_GRANTED) {
           return PERMISSION_STATUS_UNKNOWN;
         }
-        // else if(permissionStatus == PackageManager.PERMISSION_WHEN_IN_USE) {
-        //   return PERMISSION_STATUS_WHEN_IN_USE;
-        // }
       }
     }
 
@@ -296,7 +300,6 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     return grantResult == PackageManager.PERMISSION_GRANTED
             ? PERMISSION_STATUS_GRANTED
             : PERMISSION_STATUS_DENIED;
-//        ? PERMISSION_STATUS_WHEN_IN_USE;
   }
 
   private void processResult(@PermissionStatus int status) {
