@@ -1,3 +1,7 @@
+## 2.0.5
+
+* iOS: fixed bug where permssions for locationWhenInUse are reported as denied incorrectly.
+
 ## 2.0.4+1
 
 * Fixed merge conflict
