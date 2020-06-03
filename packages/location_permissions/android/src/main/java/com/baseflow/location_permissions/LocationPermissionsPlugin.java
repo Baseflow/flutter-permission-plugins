@@ -81,7 +81,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   private final IntentFilter mIntentFilter;
   private final LocationServiceBroadcastReceiver mReceiver;
 
-  private LocationPermissionsPlugin() {
+  public LocationPermissionsPlugin() {
     mReceiver = new LocationServiceBroadcastReceiver(this);
     mIntentFilter =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
