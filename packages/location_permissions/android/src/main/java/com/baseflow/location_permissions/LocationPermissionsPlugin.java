@@ -51,10 +51,10 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
-      PERMISSION_STATUS_UNKNOWN,
-      PERMISSION_STATUS_DENIED,
-      PERMISSION_STATUS_GRANTED,
-      PERMISSION_STATUS_RESTRICTED,
+    PERMISSION_STATUS_UNKNOWN,
+    PERMISSION_STATUS_DENIED,
+    PERMISSION_STATUS_GRANTED,
+    PERMISSION_STATUS_RESTRICTED,
   })
   private @interface PermissionStatus {}
 
@@ -66,10 +66,10 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
-      SERVICE_STATUS_DISABLED,
-      SERVICE_STATUS_ENABLED,
-      SERVICE_STATUS_NOT_APPLICABLE,
-      SERVICE_STATUS_UNKNOWN,
+    SERVICE_STATUS_DISABLED,
+    SERVICE_STATUS_ENABLED,
+    SERVICE_STATUS_NOT_APPLICABLE,
+    SERVICE_STATUS_UNKNOWN,
   })
   private @interface ServiceStatus {}
 
@@ -248,7 +248,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
       }
 
       ActivityCompat.requestPermissions(
-              activity, names.toArray(new String[0]), PERMISSION_CODE);
+          activity, names.toArray(new String[0]), PERMISSION_CODE);
     } else {
       processResult(PERMISSION_STATUS_GRANTED);
     }
