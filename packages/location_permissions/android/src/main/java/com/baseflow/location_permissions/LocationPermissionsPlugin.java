@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
@@ -74,7 +73,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   })
   private @interface ServiceStatus {}
 
-  private Context context;
+  private Context applicationContext;
   private Activity activity;
   private Result mResult;
   private EventSink mEventSink;
@@ -102,7 +101,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   public static void registerWith(final Registrar registrar) {
     final LocationPermissionsPlugin plugin = new LocationPermissionsPlugin();
     register(plugin, registrar.messenger());
-    plugin.context = registrar.context();
+    plugin.applicationContext = registrar.context();
     plugin.activity = registrar.activity();
 
     registrar.addRequestPermissionsResultListener(createAddRequestPermissionsResultListener(plugin));
@@ -116,7 +115,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   @Override
   public void onMethodCall(MethodCall call, Result result) {
-    if (context == null) {
+    if (applicationContext == null) {
       Log.d(LOG_TAG, "Unable to detect current Activity or App Context.");
       result.error(
           "ERROR_MISSING_CONTEXT", "Unable to detect current Activity or Active Context.", null);
@@ -126,12 +125,12 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     switch (call.method) {
       case "checkPermissionStatus":
         @PermissionStatus
-        final int permissionStatus = LocationPermissionsPlugin.checkPermissionStatus(context);
+        final int permissionStatus = LocationPermissionsPlugin.checkPermissionStatus(applicationContext);
         result.success(permissionStatus);
         break;
       case "checkServiceStatus":
         @ServiceStatus
-        final int serviceStatus = LocationPermissionsPlugin.checkServiceStatus(context);
+        final int serviceStatus = LocationPermissionsPlugin.checkServiceStatus(applicationContext);
         result.success(serviceStatus);
         break;
       case "requestPermission":
@@ -153,7 +152,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
         result.success(shouldShow);
         break;
       case "openAppSettings":
-        boolean isOpen = LocationPermissionsPlugin.openAppSettings(context);
+        boolean isOpen = LocationPermissionsPlugin.openAppSettings(applicationContext);
         result.success(isOpen);
         break;
       default:
@@ -164,9 +163,9 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   @Override
   public void onListen(Object arguments, EventSink events) {
-    events.success(isLocationServiceEnabled(context));
+    events.success(isLocationServiceEnabled(applicationContext));
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-      context.registerReceiver(mReceiver, mIntentFilter);
+      applicationContext.registerReceiver(mReceiver, mIntentFilter);
       mEventSink = events;
     } else {
       throw new UnsupportedOperationException(
@@ -177,7 +176,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   @Override
   public void onCancel(Object arguments) {
     if (mEventSink != null) {
-      context.unregisterReceiver(mReceiver);
+      applicationContext.unregisterReceiver(mReceiver);
       mEventSink = null;
     }
   }
@@ -443,7 +442,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
     register(this, binding.getBinaryMessenger());
-    context = binding.getApplicationContext();
+    applicationContext = binding.getApplicationContext();
   }
 
   @Override
