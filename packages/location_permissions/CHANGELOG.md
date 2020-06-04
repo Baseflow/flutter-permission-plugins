@@ -1,3 +1,7 @@
+## 3.0.0
+
+* Android: migrate to the version 2 of the Android Plugin API (for details see: https://flutter.dev/docs/development/packages-and-plugins/plugin-api-migration)
+
 ## 2.0.5
 
 * iOS: fixed bug where permssions for locationWhenInUse are reported as denied incorrectly.

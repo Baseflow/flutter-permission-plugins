@@ -17,8 +17,14 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
+import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -33,7 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /** LocationPermissionsPlugin */
-public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandler {
+public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandler, FlutterPlugin, ActivityAware {
   private static final String LOG_TAG = "location_permissions";
   private static final int PERMISSION_CODE = 25;
 
@@ -67,14 +73,14 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   })
   private @interface ServiceStatus {}
 
-  private final Registrar mRegistrar;
+  private Context applicationContext;
+  private Activity activity;
   private Result mResult;
   private EventSink mEventSink;
   private final IntentFilter mIntentFilter;
   private final LocationServiceBroadcastReceiver mReceiver;
 
-  private LocationPermissionsPlugin(Registrar mRegistrar) {
-    this.mRegistrar = mRegistrar;
+  public LocationPermissionsPlugin() {
     mReceiver = new LocationServiceBroadcastReceiver(this);
     mIntentFilter =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
@@ -82,30 +88,23 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
             : null;
   }
 
+  private static void register(final LocationPermissionsPlugin plugin, BinaryMessenger messenger) {
+    final MethodChannel channel =
+        new MethodChannel(messenger, "com.baseflow.flutter/location_permissions");
+    final EventChannel eventChannel =
+        new EventChannel(messenger, "com.baseflow.flutter/location_permissions_events");
+    channel.setMethodCallHandler(plugin);
+    eventChannel.setStreamHandler(plugin);
+  }
+
   /** Plugin registration. */
   public static void registerWith(final Registrar registrar) {
-    final MethodChannel channel =
-        new MethodChannel(registrar.messenger(), "com.baseflow.flutter/location_permissions");
-    final EventChannel eventChannel =
-        new EventChannel(registrar.messenger(), "com.baseflow.flutter/location_permissions_events");
-    final LocationPermissionsPlugin locationPermissionsPlugin =
-        new LocationPermissionsPlugin(registrar);
-    channel.setMethodCallHandler(locationPermissionsPlugin);
-    eventChannel.setStreamHandler(locationPermissionsPlugin);
+    final LocationPermissionsPlugin plugin = new LocationPermissionsPlugin();
+    register(plugin, registrar.messenger());
+    plugin.applicationContext = registrar.context();
+    plugin.activity = registrar.activity();
 
-    registrar.addRequestPermissionsResultListener(
-        new PluginRegistry.RequestPermissionsResultListener() {
-          @Override
-          public boolean onRequestPermissionsResult(
-              int id, String[] permissions, int[] grantResults) {
-            if (id == PERMISSION_CODE) {
-              locationPermissionsPlugin.handlePermissionsRequest(permissions, grantResults);
-              return true;
-            } else {
-              return false;
-            }
-          }
-        });
+    registrar.addRequestPermissionsResultListener(createAddRequestPermissionsResultListener(plugin));
   }
 
   private void emitLocationServiceStatus(boolean enabled) {
@@ -116,9 +115,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   @Override
   public void onMethodCall(MethodCall call, Result result) {
-    final Context context = mRegistrar.context();
-
-    if (context == null) {
+    if (applicationContext == null) {
       Log.d(LOG_TAG, "Unable to detect current Activity or App Context.");
       result.error(
           "ERROR_MISSING_CONTEXT", "Unable to detect current Activity or Active Context.", null);
@@ -128,12 +125,12 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     switch (call.method) {
       case "checkPermissionStatus":
         @PermissionStatus
-        final int permissionStatus = LocationPermissionsPlugin.checkPermissionStatus(context);
+        final int permissionStatus = LocationPermissionsPlugin.checkPermissionStatus(applicationContext);
         result.success(permissionStatus);
         break;
       case "checkServiceStatus":
         @ServiceStatus
-        final int serviceStatus = LocationPermissionsPlugin.checkServiceStatus(context);
+        final int serviceStatus = LocationPermissionsPlugin.checkServiceStatus(applicationContext);
         result.success(serviceStatus);
         break;
       case "requestPermission":
@@ -149,14 +146,13 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
         requestPermissions();
         break;
       case "shouldShowRequestPermissionRationale":
-        final Activity activity = mRegistrar.activity();
         final boolean shouldShow =
             LocationPermissionsPlugin.shouldShowRequestPermissionRationale(activity);
 
         result.success(shouldShow);
         break;
       case "openAppSettings":
-        boolean isOpen = LocationPermissionsPlugin.openAppSettings(context);
+        boolean isOpen = LocationPermissionsPlugin.openAppSettings(applicationContext);
         result.success(isOpen);
         break;
       default:
@@ -167,9 +163,9 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
   @Override
   public void onListen(Object arguments, EventSink events) {
-    events.success(isLocationServiceEnabled(mRegistrar.context()));
+    events.success(isLocationServiceEnabled(applicationContext));
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-      mRegistrar.context().registerReceiver(mReceiver, mIntentFilter);
+      applicationContext.registerReceiver(mReceiver, mIntentFilter);
       mEventSink = events;
     } else {
       throw new UnsupportedOperationException(
@@ -180,7 +176,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   @Override
   public void onCancel(Object arguments) {
     if (mEventSink != null) {
-      mRegistrar.context().unregisterReceiver(mReceiver);
+      applicationContext.unregisterReceiver(mReceiver);
       mEventSink = null;
     }
   }
@@ -233,8 +229,6 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   }
 
   private void requestPermissions() {
-    final Activity activity = mRegistrar.activity();
-
     if (activity == null) {
       Log.d(LOG_TAG, "Unable to detect current Activity.");
 
@@ -254,7 +248,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
       }
 
       ActivityCompat.requestPermissions(
-          mRegistrar.activity(), names.toArray(new String[0]), PERMISSION_CODE);
+          activity, names.toArray(new String[0]), PERMISSION_CODE);
     } else {
       processResult(PERMISSION_STATUS_GRANTED);
     }
@@ -428,5 +422,52 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     public void onReceive(Context context, Intent intent) {
       locationPermissionsPlugin.emitLocationServiceStatus(isLocationServiceEnabled(context));
     }
+  }
+
+  private static PluginRegistry.RequestPermissionsResultListener createAddRequestPermissionsResultListener(final LocationPermissionsPlugin plugin) {
+    return new PluginRegistry.RequestPermissionsResultListener() {
+      @Override
+      public boolean onRequestPermissionsResult(
+              int id, String[] permissions, int[] grantResults) {
+        if (id == PERMISSION_CODE) {
+          plugin.handlePermissionsRequest(permissions, grantResults);
+          return true;
+        } else {
+          return false;
+        }
+      }
+    };
+  }
+
+  @Override
+  public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+    register(this, binding.getBinaryMessenger());
+    applicationContext = binding.getApplicationContext();
+  }
+
+  @Override
+  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+
+  }
+
+  @Override
+  public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+    activity = binding.getActivity();
+    binding.addRequestPermissionsResultListener(createAddRequestPermissionsResultListener(this));
+  }
+
+  @Override
+  public void onDetachedFromActivityForConfigChanges() {
+
+  }
+
+  @Override
+  public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+
+  }
+
+  @Override
+  public void onDetachedFromActivity() {
+
   }
 }
