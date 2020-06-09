@@ -251,7 +251,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
     @PermissionStatus final int permissionStatus = checkPermissionStatus(activity);
     if (permissionStatus != PERMISSION_STATUS_GRANTED) {
-      final List<String> = getNamesForLevel(activity, permissionLevel);
+      final List<String> names = getNamesForLevel(activity, permissionLevel);
 
       ActivityCompat.requestPermissions(
           activity, names.toArray(new String[0]), PERMISSION_CODE);
