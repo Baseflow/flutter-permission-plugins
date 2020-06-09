@@ -72,6 +72,20 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     SERVICE_STATUS_UNKNOWN,
   })
   private @interface ServiceStatus {}
+  
+  //PERMISSION_LEVEL
+  private static final int PERMISSION_LEVEL_AUTO = 0;
+  private static final int PERMISSION_LEVEL_WHEN_IN_USE = 1;
+  private static final int PERMISSION_LEVEL_ALWAYS = 2;
+  
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef({
+    SERVICE_STATUS_DISABLED,
+    SERVICE_STATUS_ENABLED,
+    SERVICE_STATUS_NOT_APPLICABLE,
+    SERVICE_STATUS_UNKNOWN,
+  })
+  private @interface PermissionLevel {}
 
   private Context applicationContext;
   private Activity activity;
@@ -143,7 +157,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
         }
 
         mResult = result;
-        requestPermissions();
+        requestPermissions((int) call.arguments);
         break;
       case "shouldShowRequestPermissionRationale":
         final boolean shouldShow =
@@ -228,7 +242,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     return isLocationServiceEnabled(context) ? SERVICE_STATUS_ENABLED : SERVICE_STATUS_DISABLED;
   }
 
-  private void requestPermissions() {
+  private void requestPermissions(@PermissionLevel int permissionLevel) {
     if (activity == null) {
       Log.d(LOG_TAG, "Unable to detect current Activity.");
 
@@ -238,13 +252,27 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
     @PermissionStatus final int permissionStatus = checkPermissionStatus(activity);
     if (permissionStatus != PERMISSION_STATUS_GRANTED) {
-      final List<String> names = getManifestNames(activity);
+      final ArrayList<String> names = new ArrayList<>();
+      
+      if (permissionLevel == PERMISSION_LEVEL_AUTO) {
+        names.addAll(getManifestNames(activity));
 
-      //check to see if we can find manifest names
-      //if we can't add as unknown and continue
-      if (names == null || names.isEmpty()) {
-        processResult(PERMISSION_STATUS_UNKNOWN);
-        return;
+        //check to see if we can find manifest names
+        //if we can't add as unknown and continue
+        if (names.isEmpty()) {
+          processResult(PERMISSION_STATUS_UNKNOWN);
+          return;
+        }
+      } else if (permissionLevel == PERMISSION_LEVEL_WHEN_IN_USE) {
+        names.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        names.add(Manifest.permission.ACCESS_FINE_LOCATION);
+      } else if (permissionLevel == PERMISSION_LEVEL_ALWAYS) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          names.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+        }
+        
+        names.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        names.add(Manifest.permission.ACCESS_FINE_LOCATION);
       }
 
       ActivityCompat.requestPermissions(
