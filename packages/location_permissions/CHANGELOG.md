@@ -1,3 +1,7 @@
+## 3.0.0+1
+
+* iOS: fix bug where the plugin reports `granted` for `locationAlways` permission when user only allowed `locationWhenInUse`.
+
 ## 3.0.0
 
 * Android: migrate to the version 2 of the Android Plugin API (for details see: https://flutter.dev/docs/development/packages-and-plugins/plugin-api-migration)
