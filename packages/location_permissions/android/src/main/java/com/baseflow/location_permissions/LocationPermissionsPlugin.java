@@ -80,10 +80,9 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
-    SERVICE_STATUS_DISABLED,
-    SERVICE_STATUS_ENABLED,
-    SERVICE_STATUS_NOT_APPLICABLE,
-    SERVICE_STATUS_UNKNOWN,
+    PERMISSION_LEVEL_AUTO,
+    PERMISSION_LEVEL_WHEN_IN_USE,
+    PERMISSION_LEVEL_ALWAYS,
   })
   private @interface PermissionLevel {}
 
