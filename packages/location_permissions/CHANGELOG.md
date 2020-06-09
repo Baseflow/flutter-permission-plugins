@@ -1,3 +1,8 @@
+## 3.0.0+1
+
+* Android: fix bug where the plugin didn't differentiate between `locationWhenInUse` and `locationAlways` (see issue [#41](https://github.com/Baseflow/flutter-permission-plugins/issues/41) )
+* iOS: fix bug where the plugin reports `granted` for `locationAlways` permission when user only allowed `locationWhenInUse`.
+
 ## 3.0.0
 
 * Android: migrate to the version 2 of the Android Plugin API (for details see: https://flutter.dev/docs/development/packages-and-plugins/plugin-api-migration)

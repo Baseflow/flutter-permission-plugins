@@ -72,6 +72,19 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     SERVICE_STATUS_UNKNOWN,
   })
   private @interface ServiceStatus {}
+  
+  //PERMISSION_LEVEL
+  private static final int PERMISSION_LEVEL_AUTO = 0;
+  private static final int PERMISSION_LEVEL_WHEN_IN_USE = 1;
+  private static final int PERMISSION_LEVEL_ALWAYS = 2;
+  
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef({
+    PERMISSION_LEVEL_AUTO,
+    PERMISSION_LEVEL_WHEN_IN_USE,
+    PERMISSION_LEVEL_ALWAYS,
+  })
+  private @interface PermissionLevel {}
 
   private Context applicationContext;
   private Activity activity;
@@ -125,7 +138,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     switch (call.method) {
       case "checkPermissionStatus":
         @PermissionStatus
-        final int permissionStatus = LocationPermissionsPlugin.checkPermissionStatus(applicationContext);
+        final int permissionStatus = LocationPermissionsPlugin.checkPermissionStatus(applicationContext, (int) call.arguments);
         result.success(permissionStatus);
         break;
       case "checkServiceStatus":
@@ -143,7 +156,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
         }
 
         mResult = result;
-        requestPermissions();
+        requestPermissions((int) call.arguments);
         break;
       case "shouldShowRequestPermissionRationale":
         final boolean shouldShow =
@@ -182,8 +195,8 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   }
 
   @PermissionStatus
-  private static int checkPermissionStatus(Context context) {
-    final List<String> names = LocationPermissionsPlugin.getManifestNames(context);
+  private static int checkPermissionStatus(Context context, @PermissionLevel int permissionLevel) {
+    final List<String> names = LocationPermissionsPlugin.getNamesForLevel(context, permissionLevel);
 
     if (names == null) {
       Log.d(LOG_TAG, "No android specific permissions needed for: $permission");
@@ -193,7 +206,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
 
     //if no permissions were found then there is an issue and permission is not set in Android manifest
     if (names.size() == 0) {
-      Log.d(LOG_TAG, "No permissions found in manifest for: $permission");
+      Log.d(LOG_TAG, "No permissions requested for: $permission");
       return PERMISSION_STATUS_UNKNOWN;
     }
 
@@ -228,7 +241,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
     return isLocationServiceEnabled(context) ? SERVICE_STATUS_ENABLED : SERVICE_STATUS_DISABLED;
   }
 
-  private void requestPermissions() {
+  private void requestPermissions(@PermissionLevel int permissionLevel) {
     if (activity == null) {
       Log.d(LOG_TAG, "Unable to detect current Activity.");
 
@@ -236,16 +249,9 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
       return;
     }
 
-    @PermissionStatus final int permissionStatus = checkPermissionStatus(activity);
+    @PermissionStatus final int permissionStatus = checkPermissionStatus(activity, permissionLevel);
     if (permissionStatus != PERMISSION_STATUS_GRANTED) {
-      final List<String> names = getManifestNames(activity);
-
-      //check to see if we can find manifest names
-      //if we can't add as unknown and continue
-      if (names == null || names.isEmpty()) {
-        processResult(PERMISSION_STATUS_UNKNOWN);
-        return;
-      }
+      final List<String> names = getNamesForLevel(activity, permissionLevel);
 
       ActivityCompat.requestPermissions(
           activity, names.toArray(new String[0]), PERMISSION_CODE);
@@ -288,6 +294,26 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
   private void processResult(@PermissionStatus int status) {
     mResult.success(status);
     mResult = null;
+  }
+  
+  private static List<String> getNamesForLevel(Context context, @PermissionLevel int permissionLevel) {
+    final ArrayList<String> names = new ArrayList<>();
+      
+    if (permissionLevel == PERMISSION_LEVEL_AUTO) {
+      names.addAll(getManifestNames(context));
+    } else if (permissionLevel == PERMISSION_LEVEL_WHEN_IN_USE) {
+      names.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+      names.add(Manifest.permission.ACCESS_FINE_LOCATION);
+    } else if (permissionLevel == PERMISSION_LEVEL_ALWAYS) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        names.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+      }
+
+      names.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+      names.add(Manifest.permission.ACCESS_FINE_LOCATION);
+    }
+    
+    return names;
   }
 
   private static List<String> getManifestNames(Context context) {
