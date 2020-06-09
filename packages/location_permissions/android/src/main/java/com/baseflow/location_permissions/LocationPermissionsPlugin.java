@@ -249,7 +249,7 @@ public class LocationPermissionsPlugin implements MethodCallHandler, StreamHandl
       return;
     }
 
-    @PermissionStatus final int permissionStatus = checkPermissionStatus(activity);
+    @PermissionStatus final int permissionStatus = checkPermissionStatus(activity, permissionLevel);
     if (permissionStatus != PERMISSION_STATUS_GRANTED) {
       final List<String> names = getNamesForLevel(activity, permissionLevel);
 
