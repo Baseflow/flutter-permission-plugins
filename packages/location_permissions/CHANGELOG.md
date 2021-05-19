@@ -1,3 +1,7 @@
+## 4.0.0
+
+* Migrated to null safety.
+
 ## 3.0.0+1
 
 * Android: fix bug where the plugin didn't differentiate between `locationWhenInUse` and `locationAlways` (see issue [#41](https://github.com/Baseflow/flutter-permission-plugins/issues/41) )
