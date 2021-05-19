@@ -131,7 +131,7 @@ class _PermissionState extends State<PermissionWidget> {
       final SnackBar snackBar =
           SnackBar(content: Text(serviceStatus.toString()));
 
-      Scaffold.of(context).showSnackBar(snackBar);
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     });
   }
 

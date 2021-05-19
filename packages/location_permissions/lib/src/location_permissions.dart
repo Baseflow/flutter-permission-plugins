@@ -10,23 +10,23 @@ class LocationPermissions {
     if (_instance == null) {
       const MethodChannel methodChannel =
           MethodChannel('com.baseflow.flutter/location_permissions');
-      final EventChannel eventChannel = Platform.isAndroid
+      final EventChannel? eventChannel = Platform.isAndroid
           ? const EventChannel(
               'com.baseflow.flutter/location_permissions_events')
           : null;
 
       _instance = LocationPermissions.private(methodChannel, eventChannel);
     }
-    return _instance;
+    return _instance!;
   }
 
   @visibleForTesting
   LocationPermissions.private(this._methodChannel, this._eventChannel);
 
-  static LocationPermissions _instance;
+  static LocationPermissions? _instance;
 
   final MethodChannel _methodChannel;
-  final EventChannel _eventChannel;
+  final EventChannel? _eventChannel;
 
   /// Check current permission status.
   ///
@@ -56,9 +56,10 @@ class LocationPermissions {
   ///
   /// Returns [true] if the app settings page could be opened, otherwise [false] is returned.
   Future<bool> openAppSettings() async {
-    final bool hasOpened = await _methodChannel.invokeMethod('openAppSettings');
+    final bool? hasOpened =
+        await _methodChannel.invokeMethod('openAppSettings');
 
-    return hasOpened;
+    return hasOpened ?? false;
   }
 
   /// Request the user for access to the location services.
@@ -84,10 +85,10 @@ class LocationPermissions {
       return false;
     }
 
-    final bool shouldShowRationale = await _methodChannel.invokeMethod(
+    final bool? shouldShowRationale = await _methodChannel.invokeMethod(
         'shouldShowRequestPermissionRationale', permissionLevel.index);
 
-    return shouldShowRationale;
+    return shouldShowRationale ?? false;
   }
 
   /// Allows listening to the enabled/disabled state of the location service, currently only on Android.
@@ -97,7 +98,7 @@ class LocationPermissions {
     assert(Platform.isAndroid,
         'Listening to service state changes is only supported on Android.');
 
-    return _eventChannel.receiveBroadcastStream().map((dynamic status) =>
+    return _eventChannel!.receiveBroadcastStream().map((dynamic status) =>
         status ? ServiceStatus.enabled : ServiceStatus.disabled);
   }
 }
