@@ -1,5 +1,14 @@
 # Flutter Location Permissions Plugin
 
+---
+
+## Deprecation Notice 
+This plugin has been replaced by the [permission_handler](https://pub.dev/packages/permission_handler). No further updates are planned to this plugin, and we encourage all users to migrate to the [permission_handler](https://pub.dev/packages/permission_handler).
+
+This plugin was initially created to support the [geolocator](https://pub.dev/packages/geolocator) plugin and as a workaround for the [issue #26]() of the permission_handler plugin. However since version 5.0.0 of the permission_handler issue #26 has been resolved and the need for this plugin ceased to exist. The permission_handler is a full featured plugin for managing permissions and is actively maintained.
+
+---
+
 [![pub package](https://img.shields.io/pub/v/location_permissions.svg)](https://pub.dartlang.org/packages/location_permissions)
 
 The Location Permissions plugin for Flutter. This plugin provides a cross-platform (iOS, Android) API to check and request permissions to access location services.

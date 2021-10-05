@@ -1,3 +1,7 @@
+## 4.0.1
+
+* Added deprecation notice and point to the [permission_handler](https://pub.dev/packages/permission_handler) plugin as replacement.
+
 ## 4.0.0
 
 * Migrated to null safety.
