@@ -98,7 +98,8 @@ class LocationPermissions {
     assert(Platform.isAndroid,
         'Listening to service state changes is only supported on Android.');
 
-    return _eventChannel!.receiveBroadcastStream().map((dynamic status) =>
-        status ? ServiceStatus.enabled : ServiceStatus.disabled);
+    return _eventChannel!.receiveBroadcastStream().asBroadcastStream().map(
+        (dynamic status) =>
+            status ? ServiceStatus.enabled : ServiceStatus.disabled);
   }
 }
